@@ -144,5 +144,6 @@ class Application:
 
 root = Tk()
 root.geometry("400x250")
+root.title("SNMP Manager TOP")
 Application(root)
 root.mainloop()
