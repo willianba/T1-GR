@@ -1,4 +1,5 @@
 import time
+import dao
 import snmp_api
 from helpers import *
 from settings import *
@@ -211,6 +212,7 @@ class SNMPManager:
             refresh_time = self.get_refresh_time()
             self.link = self.get_link_utilization() - self.link
             self.link_list.append(self.link)
+            self.verify_link_limits()
             while self.create_charts:
                 self.clear_link_chart()
                 fig = Figure()
@@ -223,6 +225,14 @@ class SNMPManager:
                 time.sleep(refresh_time)
         except Exception:
             self.warning_value.set("Error creating link chart.\n")
+            self.update_warning_value()
+
+    def verify_link_limits(self):
+        limits = dao.get_limits_from_link()[0]
+        inferior = limits[0]
+        superior = limits[1]
+        if self.link < inferior or self.link > superior:
+            self.warning_value.set("Link is out of defined limits.\n")
             self.update_warning_value()
 
     def get_link_utilization(self):
@@ -265,6 +275,7 @@ class SNMPManager:
             self.ip_receive = self.get_ip_receive_percentage() - self.ip_receive
             self.ip_send_list.append(self.ip_send)
             self.ip_receive_list.append(self.ip_receive)
+            self.verify_ip_limits()
             while self.create_charts:
                 self.clear_ip_chart()
                 fig = Figure()
@@ -279,7 +290,15 @@ class SNMPManager:
                 graph.get_tk_widget().pack()
                 time.sleep(refresh_time)
         except Exception:
-            self.warning_value.set("Error creating ip chart.\n")
+            self.warning_value.set("Error creating IP chart.\n")
+            self.update_warning_value()
+
+    def verify_ip_limits(self):
+        limits = dao.get_limits_from_ip()[0]
+        inferior = limits[0]
+        superior = limits[1]
+        if self.ip_send < inferior or self.ip_send > superior or self.ip_receive < inferior or self.ip_receive > superior:
+            self.warning_value.set("IP is out of defined limits.\n")
             self.update_warning_value()
 
     def get_ip_send_percentage(self):
@@ -307,6 +326,7 @@ class SNMPManager:
             self.tcp_receive = self.get_tcp_receive_percentage()
             self.tcp_send_list.append(self.tcp_send)
             self.tcp_receive_list.append(self.tcp_receive)
+            self.verify_tcp_limits()
             while self.create_charts:
                 self.clear_tcp_chart()
                 fig = Figure()
@@ -321,7 +341,15 @@ class SNMPManager:
                 graph.get_tk_widget().pack()
                 time.sleep(refresh_time)
         except Exception:
-            self.warning_value.set("Error creating tcp chart.\n")
+            self.warning_value.set("Error creating TCP chart.\n")
+            self.update_warning_value()
+
+    def verify_tcp_limits(self):
+        limits = dao.get_limits_from_tcp()[0]
+        inferior = limits[0]
+        superior = limits[1]
+        if self.tcp_send < inferior or self.tcp_send> superior or self.tcp_receive < inferior or self.tcp_receive > superior:
+            self.warning_value.set("TCP is out of defined limits.\n")
             self.update_warning_value()
 
     def get_tcp_send_percentage(self):
@@ -349,6 +377,7 @@ class SNMPManager:
             self.udp_receive = self.get_udp_receive_percentage() - self.udp_receive
             self.udp_send_list.append(self.udp_send)
             self.udp_receive_list.append(self.udp_receive)
+            self.verify_udp_limits()
             while self.create_charts:
                 self.clear_udp_chart()
                 fig = Figure()
@@ -363,7 +392,15 @@ class SNMPManager:
                 graph.get_tk_widget().pack()
                 time.sleep(refresh_time)
         except Exception:
-            self.warning_value.set("Error creating udp chart.\n")
+            self.warning_value.set("Error creating UDP chart.\n")
+            self.update_warning_value()
+
+    def verify_udp_limits(self):
+        limits = dao.get_limits_from_udp()[0]
+        inferior = limits[0]
+        superior = limits[1]
+        if self.udp_send < inferior or self.udp_send> superior or self.udp_receive < inferior or self.udp_receive > superior:
+            self.warning_value.set("UDP is out of defined limits.\n")
             self.update_warning_value()
 
     def get_udp_send_percentage(self):
@@ -391,6 +428,7 @@ class SNMPManager:
             self.icmp_receive = self.get_icmp_receive_percentage() - self.icmp_receive
             self.icmp_send_list.append(self.icmp_send)
             self.icmp_receive_list.append(self.icmp_receive)
+            self.verify_icmp_limits()
             while self.create_charts:
                 self.clear_icmp_chart()
                 fig = Figure()
@@ -405,7 +443,15 @@ class SNMPManager:
                 graph.get_tk_widget().pack()
                 time.sleep(refresh_time)
         except Exception:
-            self.warning_value.set("Error creating icmp chart.\n")
+            self.warning_value.set("Error creating ICMP chart.\n")
+            self.update_warning_value()
+
+    def verify_icmp_limits(self):
+        limits = dao.get_limits_from_icmp()[0]
+        inferior = limits[0]
+        superior = limits[1]
+        if self.icmp_send < inferior or self.icmp_send> superior or self.icmp_receive < inferior or self.icmp_receive > superior:
+            self.warning_value.set("ICMP is out of defined limits.\n")
             self.update_warning_value()
 
     def get_icmp_send_percentage(self):
@@ -433,6 +479,7 @@ class SNMPManager:
             self.snmp_receive = self.get_snmp_receive_percentage() - self.snmp_receive
             self.snmp_send_list.append(self.snmp_send)
             self.snmp_receive_list.append(self.snmp_receive)
+            self.verify_snmp_limits()
             while self.create_charts:
                 self.clear_snmp_chart()
                 fig = Figure()
@@ -447,7 +494,15 @@ class SNMPManager:
                 graph.get_tk_widget().pack()
                 time.sleep(refresh_time)
         except Exception:
-            self.warning_value.set("Error creating snmp chart.\n")
+            self.warning_value.set("Error creating SNMP chart.\n")
+            self.update_warning_value()
+
+    def verify_snmp_limits(self):
+        limits = dao.get_limits_from_snmp()[0]
+        inferior = limits[0]
+        superior = limits[1]
+        if self.snmp_send < inferior or self.snmp_send> superior or self.snmp_receive < inferior or self.snmp_receive > superior:
+            self.warning_value.set("SNMP is out of defined limits.\n")
             self.update_warning_value()
 
     def get_snmp_send_percentage(self):
