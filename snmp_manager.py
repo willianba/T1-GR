@@ -165,21 +165,16 @@ class SNMPManager:
         self.navigation_tabs.pack()
 
     def get_snmp_object(self):
-        try:
-            parameters = self.extract_snmp_parameters()
-            snmp_response = snmp_api.run(parameters)
-            self.response_value.set(snmp_response)
-        except IndexError:
-            self.response_value.set("Object must contain an instance.")
+        parameters = self.extract_snmp_parameters()
+        snmp_response = snmp_api.run(parameters)
+        self.response_value.set(snmp_response)
         self.update_return_value()
 
     def extract_snmp_parameters(self):
-        snmp_object = self.object.get().split(".")
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": snmp_object[0],
-            "instance": snmp_object[1]
+            "object": self.object.get()
         }
         return parameters
 
@@ -223,7 +218,8 @@ class SNMPManager:
                 graph = FigureCanvasTkAgg(fig, master=self.link_chart)
                 graph.get_tk_widget().pack()
                 time.sleep(refresh_time)
-        except Exception:
+        except Exception as e:
+            print(e)
             self.warning_value.set("Error creating link chart.\n")
             self.update_warning_value()
 
@@ -245,8 +241,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifInOctets",
-            "instance": "0"
+            "object": "ifInOctets.2"
         }
         return int(snmp_api.run(parameters))
 
@@ -254,8 +249,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifOutOctets",
-            "instance": "0"
+            "object": "ifOutOctets.2"
         }
         return int(snmp_api.run(parameters))
 
@@ -263,8 +257,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifSpeed",
-            "instance": "0"
+            "object": "ifSpeed.2"
         }
         return int(snmp_api.run(parameters))
 
@@ -305,8 +298,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ipInDelivers",
-            "instance": "0"
+            "object": "ipInDelivers.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
 
@@ -314,8 +306,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ipOutRequests",
-            "instance": "0"
+            "object": "ipOutRequests"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
 
@@ -356,8 +347,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "tcpOutSegs",
-            "instance": "0"
+            "object": "tcpOutSegs.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
 
@@ -365,8 +355,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "tcpInSegs",
-            "instance": "0"
+            "object": "tcpInSegs.1"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
 
@@ -407,8 +396,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "udpOutDatagrams",
-            "instance": "0"
+            "object": "udpOutDatagrams.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
 
@@ -416,8 +404,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "udpInDatagrams",
-            "instance": "0"
+            "object": "udpInDatagrams.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
 
@@ -458,8 +445,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "icmpOutMsgs",
-            "instance": "0"
+            "object": "icmpOutMsgs.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
 
@@ -467,8 +453,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "icmpInMsgs",
-            "instance": "0"
+            "object": "icmpInMsgs.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
 
@@ -509,8 +494,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "snmpOutPkts",
-            "instance": "0"
+            "object": "snmpOutPkts.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
 
@@ -518,8 +502,7 @@ class SNMPManager:
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "snmpInPkts",
-            "instance": "0"
+            "object": "snmpInPkts.0"
         }
         return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
 
@@ -527,14 +510,12 @@ class SNMPManager:
         u_parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifOutUcastPkts",
-            "instance": "0"
+            "object": "ifOutUcastPkts.2"
         }
         nu_parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifOutNUcastPkts",
-            "instance": "0"
+            "object": "ifOutNUcastPkts.2"
         }
         u_packets = int(snmp_api.run(u_parameters))
         nu_packets = int(snmp_api.run(nu_parameters))
@@ -544,14 +525,12 @@ class SNMPManager:
         u_parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifInUcastPkts",
-            "instance": "0"
+            "object": "ifInUcastPkts.2"
         }
         nu_parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
-            "object": "ifInNUcastPkts",
-            "instance": "0"
+            "object": "ifInNUcastPkts.2"
         }
         u_packets = int(snmp_api.run(u_parameters))
         nu_packets = int(snmp_api.run(nu_parameters))
