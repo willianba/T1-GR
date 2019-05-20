@@ -1,23 +1,9 @@
-from pysnmp.hlapi import *
+from easysnmp import snmp_get
 
 
 # noinspection PyBroadException
 def run(parameters):
     try:
-        error_indication, error_status, error_index, var_binds = next(
-            getCmd(SnmpEngine(),
-                   CommunityData(parameters['community'], mpModel=0),
-                   UdpTransportTarget((parameters['agent'], 161)),
-                   ContextData(),
-                   ObjectType(ObjectIdentity('SNMPv2-MIB', parameters['object'], parameters['instance']))))
-
-        if error_indication:
-            return error_indication
-        elif error_status:
-            return ('%s at %s' % (error_status.prettyPrint(),
-                                  error_index and var_binds[int(error_index) - 1][0] or '?'))
-        else:
-            for varBind in var_binds:
-                return ' = '.join([x.prettyPrint() for x in varBind])
+        return snmp_get(parameters["object"], hostname=parameters["agent"], community=parameters["community"], version=2).value
     except Exception:
         return "Something went wrong."
