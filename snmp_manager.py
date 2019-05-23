@@ -67,6 +67,8 @@ class SNMPManager:
         # placeholders
         self.threads = None
         self.link = 0
+        self.input_octets = 0
+        self.output_octets = 0
         self.link_list = []
         self.ip_send = 0
         self.ip_receive = 0
@@ -207,12 +209,17 @@ class SNMPManager:
             refresh_time = self.get_refresh_time()
             while self.create_charts:
                 self.clear_link_chart()
-                new_value = self.get_link_utilization()
-                difference = new_value - self.link
+                new_input_octets = self.get_input_octets()
+                new_output_octets = self.get_output_octets()
+                input_difference = new_input_octets - self.input_octets
+                output_difference = new_output_octets - self.output_octets
+                link_utilization = self.get_link_utilization(input_difference, output_difference)
                 if (self.link):
-                    self.link_list.append(difference)
-                    self.verify_link_limits(difference)
-                self.link = new_value
+                    self.link_list.append(link_utilization)
+                    self.verify_link_limits(link_utilization)
+                self.input_octets = new_input_octets
+                self.output_octets = new_output_octets
+                self.link = link_utilization
                 fig = Figure()
                 ax = fig.add_subplot()
                 ax.grid()
@@ -233,9 +240,7 @@ class SNMPManager:
             self.warning_value.set("Link is out of defined limits.\n")
             self.update_warning_value()
 
-    def get_link_utilization(self):
-        input_octets = self.get_input_octets()
-        output_octets = self.get_output_octets()
+    def get_link_utilization(self, input_octets, output_octets):
         if_speed = self.get_if_speed()
         return (input_octets + output_octets) * 8 / if_speed
 
@@ -268,8 +273,8 @@ class SNMPManager:
             refresh_time = self.get_refresh_time()
             while self.create_charts:
                 self.clear_ip_chart()
-                new_send = self.get_ip_send_percentage()
-                new_receive = self.get_ip_receive_percentage()
+                new_send = self.get_ip_send()
+                new_receive = self.get_ip_receive()
                 send_difference = new_send - self.ip_send
                 receive_difference = new_receive - self.ip_receive
                 if (self.ip_send or self.ip_receive):
@@ -301,29 +306,29 @@ class SNMPManager:
             self.warning_value.set("IP is out of defined limits.\n")
             self.update_warning_value()
 
-    def get_ip_send_percentage(self):
+    def get_ip_send(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "ipInDelivers.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
+        return int(snmp_api.run(parameters))
 
-    def get_ip_receive_percentage(self):
+    def get_ip_receive(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "ipOutRequests.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
+        return int(snmp_api.run(parameters))
 
     def create_tcp_chart(self):
         try:
             refresh_time = self.get_refresh_time()
             while self.create_charts:
                 self.clear_tcp_chart()
-                new_send = self.get_tcp_send_percentage()
-                new_receive = self.get_tcp_receive_percentage()
+                new_send = self.get_tcp_send()
+                new_receive = self.get_tcp_receive()
                 send_difference = new_send - self.tcp_send
                 receive_difference = new_receive - self.tcp_receive
                 if (self.tcp_send or self.tcp_receive):
@@ -355,29 +360,29 @@ class SNMPManager:
             self.warning_value.set("TCP is out of defined limits.\n")
             self.update_warning_value()
 
-    def get_tcp_send_percentage(self):
+    def get_tcp_send(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "tcpOutSegs.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
+        return int(snmp_api.run(parameters))
 
-    def get_tcp_receive_percentage(self):
+    def get_tcp_receive(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "tcpInSegs.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
+        return int(snmp_api.run(parameters))
 
     def create_udp_chart(self):
         try:
             refresh_time = self.get_refresh_time()
             while self.create_charts:
                 self.clear_udp_chart()
-                new_send = self.get_udp_send_percentage()
-                new_receive = self.get_udp_receive_percentage()
+                new_send = self.get_udp_send()
+                new_receive = self.get_udp_receive()
                 send_difference = new_send - self.udp_send
                 receive_difference = new_receive - self.udp_receive
                 if (self.udp_send or self.udp_receive):
@@ -409,29 +414,29 @@ class SNMPManager:
             self.warning_value.set("UDP is out of defined limits.\n")
             self.update_warning_value()
 
-    def get_udp_send_percentage(self):
+    def get_udp_send(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "udpOutDatagrams.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
+        return int(snmp_api.run(parameters))
 
-    def get_udp_receive_percentage(self):
+    def get_udp_receive(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "udpInDatagrams.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
+        return int(snmp_api.run(parameters))
 
     def create_icmp_chart(self):
         try:
             refresh_time = self.get_refresh_time()
             while self.create_charts:
                 self.clear_icmp_chart()
-                new_send = self.get_icmp_send_percentage()
-                new_receive = self.get_icmp_receive_percentage()
+                new_send = self.get_icmp_send()
+                new_receive = self.get_icmp_receive()
                 send_difference = new_send - self.icmp_send
                 receive_difference = new_receive - self.icmp_receive
                 if (self.icmp_send or self.icmp_receive):
@@ -463,29 +468,29 @@ class SNMPManager:
             self.warning_value.set("ICMP is out of defined limits.\n")
             self.update_warning_value()
 
-    def get_icmp_send_percentage(self):
+    def get_icmp_send(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "icmpOutMsgs.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
+        return int(snmp_api.run(parameters))
 
-    def get_icmp_receive_percentage(self):
+    def get_icmp_receive(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "icmpInMsgs.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
+        return int(snmp_api.run(parameters))
 
     def create_snmp_chart(self):
         try:
             refresh_time = self.get_refresh_time()
             while self.create_charts:
                 self.clear_snmp_chart()
-                new_send = self.get_snmp_send_percentage()
-                new_receive = self.get_snmp_receive_percentage()
+                new_send = self.get_snmp_send()
+                new_receive = self.get_snmp_receive()
                 send_difference = new_send - self.snmp_send
                 receive_difference = new_receive - self.snmp_receive
                 if (self.snmp_send or self.snmp_receive):
@@ -517,51 +522,21 @@ class SNMPManager:
             self.warning_value.set("SNMP is out of defined limits.\n")
             self.update_warning_value()
 
-    def get_snmp_send_percentage(self):
+    def get_snmp_send(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "snmpOutPkts.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_sent_packets()
+        return int(snmp_api.run(parameters))
 
-    def get_snmp_receive_percentage(self):
+    def get_snmp_receive(self):
         parameters = {
             "agent": self.agent.get(),
             "community": self.community.get(),
             "object": "snmpInPkts.0"
         }
-        return int(snmp_api.run(parameters)) * 100 / self.get_received_packets()
-
-    def get_sent_packets(self):
-        u_parameters = {
-            "agent": self.agent.get(),
-            "community": self.community.get(),
-            "object": "ifOutUcastPkts.2"
-        }
-        nu_parameters = {
-            "agent": self.agent.get(),
-            "community": self.community.get(),
-            "object": "ifOutNUcastPkts.2"
-        }
-        u_packets = int(snmp_api.run(u_parameters))
-        nu_packets = int(snmp_api.run(nu_parameters))
-        return u_packets + nu_packets
-
-    def get_received_packets(self):
-        u_parameters = {
-            "agent": self.agent.get(),
-            "community": self.community.get(),
-            "object": "ifInUcastPkts.2"
-        }
-        nu_parameters = {
-            "agent": self.agent.get(),
-            "community": self.community.get(),
-            "object": "ifInNUcastPkts.2"
-        }
-        u_packets = int(snmp_api.run(u_parameters))
-        nu_packets = int(snmp_api.run(nu_parameters))
-        return u_packets + nu_packets
+        return int(snmp_api.run(parameters))
 
     def clear_link_chart(self):
         for child in self.link_chart.winfo_children():
